@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using InstituteApi.Models;
 using InstituteApi.DTOs;
+using Microsoft.AspNetCore.Cors;
 
 namespace InstituteApi.Controllers;
 
+[EnableCors("_myAllowSpecificOrigins")]
 [ApiController]
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
@@ -87,7 +89,8 @@ public class UsersController : ControllerBase
             Gender = userDto.Gender,
             PhoneNo = userDto.PhoneNo,
             Email = userDto.Email,
-            Address = userDto.Address
+            Address = userDto.Address,
+            UserType = userDto.UserType
         };
 
         _context.Users.Add(user);
@@ -123,6 +126,7 @@ public class UsersController : ControllerBase
         user.PhoneNo = userDto.PhoneNo;
         user.Email = userDto.Email;
         user.Address = userDto.Address;
+        user.UserType = userDto.UserType;
 
         try
         {
@@ -170,6 +174,7 @@ public class UsersController : ControllerBase
         Gender = user.Gender,
         PhoneNo = user.PhoneNo,
         Email = user.Email,
-        Address = user.Address
+        Address = user.Address,
+        UserType = user.UserType
     };
 }
