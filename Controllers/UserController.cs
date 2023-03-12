@@ -104,7 +104,7 @@ public class UsersController : ControllerBase
 
     // PUT: api/Users/5
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutUser(long id, UserDto userDto)
+    public async Task<IActionResult> PutUser(long id,[FromBody] UserDto userDto)
     {
         if (id != userDto.Id)
         {
@@ -119,14 +119,11 @@ public class UsersController : ControllerBase
 
         user.FirstName = userDto.FirstName;
         user.LastName = userDto.LastName;
-        user.UserName = userDto.UserName;
-        user.Password = userDto.Password;
         user.Birthdate = userDto.Birthdate;
         user.Gender = userDto.Gender;
         user.PhoneNo = userDto.PhoneNo;
         user.Email = userDto.Email;
         user.Address = userDto.Address;
-        user.UserType = userDto.UserType;
 
         try
         {
