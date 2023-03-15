@@ -10,4 +10,6 @@ public class InstituteContext : DbContext
     }
 
     public DbSet<User> Users { get; set; } = null!;
+
+    public DbSet<Admission> Admissions { get; set; } = null!;
 }
