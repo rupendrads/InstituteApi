@@ -12,45 +12,11 @@ namespace InstituteApi.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly InstituteContext _context;
-    //private IList<User> Users;
 
     public UsersController(InstituteContext context)
     {   
-        //this.Users = new List<User>();
         _context = context;
     }
-
-    // [HttpGet(Name = "GetUsers")]
-    // public IEnumerable<User> Get()
-    // {
-    //     this.Users.Add(new User {
-    //         Id = 1,
-    //        FirstName = "Vinod",
-    //        LastName = "Parekh",
-    //        UserName = "vinodparekh",
-    //        Password = "vinod1990",
-    //        Email = "vinodparekh@gmail.com",
-    //        Gender = "M",
-    //        Birthdate = "20 Oct 1990",
-    //        PhoneNo = "9856475241",
-    //        Address = "Bhandup, Mumbai"
-    //     });
-
-    //     this.Users.Add(new User {
-    //         Id = 2,
-    //        FirstName = "Prakash",
-    //        LastName = "Surve",
-    //        UserName = "psurve",
-    //        Password = "psurve1985",
-    //        Email = "psurve@gmail.com",
-    //        Gender = "M",
-    //        Birthdate = "10 Jun 1985",
-    //        PhoneNo = "9856425684",
-    //        Address = "Andheri, Mumbai"
-    //     });
-
-    //     return this.Users;
-    // }
 
     // GET: api/Users
     [HttpGet]
@@ -81,6 +47,7 @@ public class UsersController : ControllerBase
     {
         var user = new User
         {
+            InstituteId = userDto.InstituteId,
             FirstName = userDto.FirstName,
             LastName = userDto.LastName,
             UserName = userDto.UserName,
@@ -163,6 +130,7 @@ public class UsersController : ControllerBase
     new UserDto
     {
         Id = user.Id,
+        InstituteId = user.InstituteId,
         FirstName = user.FirstName,
         LastName = user.LastName,
         UserName = user.UserName,

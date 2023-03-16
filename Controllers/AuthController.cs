@@ -27,7 +27,9 @@ public class AuthController: ControllerBase
 
         return Ok(new {
             loggedIn= loggedIn,
-            userId = user?.Id
+            userId = user?.Id,
+            userType = user?.UserType,
+            instituteId = user?.InstituteId
         });
     }
 }
