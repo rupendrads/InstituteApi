@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using InstituteApi.Models;
 using InstituteApi.DTOs;
 using Microsoft.AspNetCore.Cors;
+using System.Linq;
 
 namespace InstituteApi.Controllers;
 
@@ -53,12 +54,17 @@ public class CourseController : ControllerBase
             CourseDuration = courseDto.CourseDuration,            
         };
 
-        course.Subjects = new List<Subject>();
+        var subjectsArray = courseDto.Subjects.ToArray();
+        List<long?> subjectIds = new List<long?>();
         courseDto.Subjects.ToList().ForEach(subject => {
-            course.Subjects.Add(new Subject {
-                SubjectName = subject.SubjectName
-            });
+                subjectIds.Add(subject.SubjectId);
         });
+        
+        var selectedSubjects = from s in _context.Subjects
+        where subjectIds.Contains(s.SubjectId.Value)
+        select s;
+
+        course.Subjects = selectedSubjects.ToList();
 
         _context.Courses.Add(course);
         await _context.SaveChangesAsync();
@@ -67,6 +73,70 @@ public class CourseController : ControllerBase
             nameof(GetCourse),
             new { id = course.CourseId },
             ItemToDTO(course));
+    }
+
+    // PUT: api/Course/5
+    [HttpPut("{courseId}")]
+    public async Task<IActionResult> PutCourse(long courseId,[FromBody] CourseDto courseDto)
+    {
+        if (courseId != courseDto.CourseId)
+        {
+            return BadRequest();
+        }
+
+        var course = await _context.Courses.Include(s => s.Subjects).FirstOrDefaultAsync(c => c.CourseId == courseId);
+        if (course == null)
+        {
+            return NotFound();
+        }
+
+        course.CourseName = courseDto.CourseName;
+        course.CourseDuration = courseDto.CourseDuration;
+        course.CourseFee = courseDto.CourseFee;
+
+        var subjectsArray = courseDto.Subjects.ToArray();
+        List<long?> subjectIds = new List<long?>();
+        courseDto.Subjects.ToList().ForEach(subject => {
+                subjectIds.Add(subject.SubjectId);
+        });
+        
+        var selectedSubjects = from s in _context.Subjects
+        where subjectIds.Contains(s.SubjectId.Value)
+        select s;
+
+        var deletedSubjects = course.Subjects.Except(selectedSubjects);
+
+        // added subjects
+        selectedSubjects.ToList().ForEach(selectedSubject => {
+            if(course.Subjects.FirstOrDefault(s => s.SubjectId == selectedSubject.SubjectId) == null)
+            {
+                course.Subjects.Add(selectedSubject);
+            }
+        });        
+
+        // removed subjects
+        deletedSubjects.ToList().ForEach(deletedSubject => {
+            if(course.Subjects.FirstOrDefault(s => s.SubjectId == deletedSubject.SubjectId) != null)
+            {
+                course.Subjects.Remove(deletedSubject);
+            }
+        });
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException) when (!CourseExists(courseId))
+        {
+            return NotFound();
+        }
+
+        return NoContent();
+    }
+
+    private bool CourseExists(long courseId)
+    {
+        return _context.Courses.Any(e => e.CourseId == courseId);
     }
 
     private static CourseDto ItemToDTO(Course course) 
