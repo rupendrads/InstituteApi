@@ -134,6 +134,22 @@ public class CourseController : ControllerBase
         return NoContent();
     }
 
+    // DELETE: api/Course/5
+    [HttpDelete("{courseId}")]
+    public async Task<IActionResult> DeleteCourse(long courseId)
+    {
+        var course = await _context.Courses.FindAsync(courseId);
+        if (course == null)
+        {
+            return NotFound();
+        }
+
+        _context.Courses.Remove(course);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
     private bool CourseExists(long courseId)
     {
         return _context.Courses.Any(e => e.CourseId == courseId);
