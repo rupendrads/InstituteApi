@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using InstituteApi.Models;
+using System.Text.Json.Serialization;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -20,7 +21,9 @@ builder.Services.AddCors(options =>
         .AllowCredentials();
     });
 });
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(x =>
+                x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+;
 builder.Services.AddDbContext<InstituteContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("InstituteDB")));
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

@@ -32,7 +32,7 @@ public class CourseController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<Course>> GetCourse(long id)
     {
-        var course = await _context.Courses.FindAsync(id);
+        var course = await _context.Courses.Include(c => c.Subjects).FirstOrDefaultAsync(c => c.CourseId == id);
 
         if (course == null)
         {
