@@ -17,6 +17,12 @@ public class InstituteContext : DbContext
 
     public DbSet<Subject> Subjects { get; set; } = null!;
 
+    public DbSet<Institute> Institutes { get; set; } = null!;
+
+    public DbSet<RoyaltyLevel> RoyaltyLevels { get; set; } = null!;
+
+    public DbSet<RoyaltyLevelDetail> RoyaltyLevelDetails { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
@@ -24,5 +30,10 @@ public class InstituteContext : DbContext
             .HasMany(p => p.Subjects)
             .WithMany(p => p.Courses)
             .UsingEntity(j => j.ToTable("CourseSubjects"));
+
+        modelBuilder.Entity<Institute>()
+        .HasOne(a => a.RoyaltyLevel)
+        .WithOne(b => b.Institute)
+        .HasForeignKey<RoyaltyLevel>(b => b.Id);
     }
 }

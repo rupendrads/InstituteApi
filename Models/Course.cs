@@ -12,5 +12,9 @@ public class Course
 
     public short CourseDuration { get; set; }
 
+    public string? RoyaltyType { get; set; }
+
+    public double RoyaltyValue { get; set; }
+
     public ICollection<Subject> Subjects { get; set; }
 }

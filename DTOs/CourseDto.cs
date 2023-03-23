@@ -12,5 +12,9 @@ public class CourseDto
 
     public short CourseDuration { get; set; }
 
+    public string? RoyaltyType { get; set; }
+
+    public double RoyaltyValue { get; set; }
+
     public ICollection<SubjectDto> Subjects { get; set; }
 }

@@ -30,7 +30,7 @@ public class CourseController : ControllerBase
 
     // GET: api/Course/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<Course>> GetCourse(long id)
+    public async Task<ActionResult<CourseDto>> GetCourse(long id)
     {
         var course = await _context.Courses.Include(c => c.Subjects).FirstOrDefaultAsync(c => c.CourseId == id);
 
@@ -39,7 +39,7 @@ public class CourseController : ControllerBase
             return NotFound();
         }
 
-        return course;
+        return ItemToDTO(course);
     }
 
     // POST: api/Course
@@ -51,7 +51,9 @@ public class CourseController : ControllerBase
             CourseName = courseDto.CourseName,
             InstituteId = courseDto.InstituteId,
             CourseFee = courseDto.CourseFee,
-            CourseDuration = courseDto.CourseDuration,            
+            CourseDuration = courseDto.CourseDuration,
+            RoyaltyType = courseDto.RoyaltyType,
+            RoyaltyValue = courseDto.RoyaltyValue            
         };
 
         var subjectsArray = courseDto.Subjects.ToArray();
@@ -93,6 +95,8 @@ public class CourseController : ControllerBase
         course.CourseName = courseDto.CourseName;
         course.CourseDuration = courseDto.CourseDuration;
         course.CourseFee = courseDto.CourseFee;
+        course.RoyaltyType = courseDto.RoyaltyType;
+        course.RoyaltyValue = courseDto.RoyaltyValue;
 
         var subjectsArray = courseDto.Subjects.ToArray();
         List<long?> subjectIds = new List<long?>();
@@ -163,7 +167,9 @@ public class CourseController : ControllerBase
             CourseName = course.CourseName,
             InstituteId = course.InstituteId,
             CourseDuration = course.CourseDuration,
-            CourseFee = course.CourseFee           
+            CourseFee = course.CourseFee,
+            RoyaltyType = course.RoyaltyType,
+            RoyaltyValue = course.RoyaltyValue           
         };
         courseDto.Subjects = new List<SubjectDto>();
         if(course.Subjects!=null)
