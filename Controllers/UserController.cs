@@ -29,7 +29,7 @@ public class UsersController : ControllerBase
 
     // GET: api/Users/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<User>> GetUser(long id)
+    public async Task<ActionResult<UserDto>> GetUser(long id)
     {
         var user = await _context.Users.FindAsync(id);
 
@@ -38,7 +38,7 @@ public class UsersController : ControllerBase
             return NotFound();
         }
 
-        return user;
+        return ItemToDTO(user);
     }
 
     // POST: api/Users
