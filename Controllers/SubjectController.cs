@@ -20,9 +20,9 @@ public class SubjectController: ControllerBase
 
     // GET: api/Subject
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<SubjectDto>>> GetSubjects()
+    public async Task<ActionResult<IEnumerable<SubjectDto>>> GetSubjects(long instituteId)
     {
-        return await _context.Subjects
+        return await _context.Subjects.Where(s => s.InstituteId == instituteId)
             .Select(x => ItemToDTO(x))
             .ToListAsync();
     }
@@ -47,7 +47,8 @@ public class SubjectController: ControllerBase
     {
         var subject = new Subject
         {
-            SubjectName = subjectDto.SubjectName
+            SubjectName = subjectDto.SubjectName,
+            InstituteId = subjectDto.InstituteId
         };
 
         _context.Subjects.Add(subject);
@@ -113,6 +114,7 @@ public class SubjectController: ControllerBase
     new SubjectDto
     {
         SubjectId = subject.SubjectId,
-        SubjectName = subject.SubjectName
+        SubjectName = subject.SubjectName,
+        InstituteId = subject.InstituteId
     };
 }

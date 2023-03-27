@@ -5,4 +5,6 @@ public class SubjectDto
     public long? SubjectId { get; set; }
 
     public string SubjectName { get; set; }
+
+    public long InstituteId { get; set; }
 }
