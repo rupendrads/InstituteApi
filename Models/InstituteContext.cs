@@ -23,6 +23,10 @@ public class InstituteContext : DbContext
 
     public DbSet<RoyaltyLevelDetail> RoyaltyLevelDetails { get; set; } = null!;
 
+    public DbSet<RoyaltyDistribution> RoyaltyDistributions { get; set; } = null!;
+
+    public DbSet<RoyaltyDistributionDetail> RoyaltyDistributionDetails { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
