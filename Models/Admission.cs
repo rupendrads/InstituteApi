@@ -17,4 +17,6 @@ public class Admission
     public DateTime DateOfAdmission { get; set; }
 
     public long? RefId { get; set; }
+
+    public virtual RoyaltyDistribution? RoyaltyDistribution {get; set; }
 }

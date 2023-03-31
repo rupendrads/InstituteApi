@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using InstituteApi.Models;
 using InstituteApi.DTOs;
 using Microsoft.AspNetCore.Cors;
-using System.Linq;
 
 namespace InstituteApi.Controllers;
 
@@ -19,8 +18,8 @@ public class RoyaltyDistributionController : ControllerBase
         _context = context;
     }
 
-    // GET: api/RoyaltyDistribution/1
-    [HttpGet("{instituteId}")]
+    // GET: api/RoyaltyDistribution?instituteId=1
+    [HttpGet]
     public async Task<ActionResult<IEnumerable<RoyaltyDistributionDto>>> GetRoyaltyDistributions(long instituteId)
     {
         // get royalty levels
@@ -32,15 +31,17 @@ public class RoyaltyDistributionController : ControllerBase
         var royaltyLevelDto = RoyaltyLevelItemToDTO(royaltyLevel);        
 
         //get admissions with referrals
-        var admissions = from ad in _context.Admissions.Where(ad => ad.RefId!= null && ad.InstituteId == instituteId).Include(adm => adm.User).Include(adm => adm.Course) 
-                         join rd in _context.RoyaltyDistributions
-                         on ad.Id equals rd.AdmissionId into adm from royaltyDist in adm.DefaultIfEmpty()
-                         select ad;
-        var admissionsList = await admissions.ToListAsync();        
+        var admissions = _context.Admissions.Where(ad => ad.RefId!= null && ad.InstituteId == instituteId)
+                        .Include(adm => adm.User)
+                        .Include(adm => adm.Course)
+                        .Include(adm => adm.RoyaltyDistribution); 
+        var admissionsList = await admissions.ToListAsync();               
 
         // get referrals for each admission
         List<RoyaltyDistributionDto> royaltyDistributionList = new List<RoyaltyDistributionDto>();
-        admissionsList.ForEach(ad => {
+        admissionsList.ForEach(ad => {  
+            if(ad.RoyaltyDistribution ==null)
+            {
             var royaltyDistribution = new RoyaltyDistributionDto {
                             Id = -1,            
                             AdmissionId = ad.Id,
@@ -86,8 +87,80 @@ public class RoyaltyDistributionController : ControllerBase
                 }
             });
             royaltyDistributionList.Add(royaltyDistribution);
+            }
         });
         return royaltyDistributionList;       
+    }
+
+    // GET: api/RoyaltyDistribution/5
+    [HttpGet("{id}")]
+    public async Task<ActionResult<RoyaltyDistributionDto>> GetRoyaltyDistribution(long id)
+    {
+        var royaltyDistribution = await _context.RoyaltyDistributions.Include(rd => rd.RoyaltyDistributionDetails).FirstOrDefaultAsync(rl => rl.Id == id);
+
+        if (royaltyDistribution == null)
+        {
+            return NotFound();
+        }
+
+        return RoyaltyDistributionItemToDto(royaltyDistribution);
+    }
+
+    // POST: api/RoyaltyDistribution
+    [HttpPost]
+    public async Task<ActionResult<RoyaltyDistributionDto>> PostRoyaltyDistribution(RoyaltyDistributionDto royaltyDistributionDto)
+    {        
+        var royaltyDistribution = new RoyaltyDistribution {
+            AdmissionId = royaltyDistributionDto.AdmissionId,
+            DateOfExecution = DateTime.Now,            
+        };
+
+        royaltyDistribution.RoyaltyDistributionDetails = new List<RoyaltyDistributionDetail>();
+        royaltyDistributionDto.RoyaltyDistributionDetails.ToList().ForEach(rdd => {
+            royaltyDistribution.RoyaltyDistributionDetails.Add(new RoyaltyDistributionDetail {
+                PayoutDate = null,
+                PayoutFlag = false,
+                RoyaltyAmount = rdd.RoyaltyAmount,
+                RoyaltyLevelDetailId = rdd.RoyaltyLevelDetailId,
+                UserId = rdd.UserId
+            });
+        });
+
+        _context.RoyaltyDistributions.Add(royaltyDistribution);
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(
+            nameof(GetRoyaltyDistribution),
+            new { id = royaltyDistribution.Id });
+    }
+
+    private static RoyaltyDistributionDto RoyaltyDistributionItemToDto(RoyaltyDistribution royaltyDistribution)
+    {
+        RoyaltyDistributionDto royaltyDistributionDto = new RoyaltyDistributionDto {
+            Id = royaltyDistribution.Id,
+            AdmissionId = royaltyDistribution.AdmissionId,
+            DateOfExecution = royaltyDistribution.DateOfExecution
+        };
+
+        if(royaltyDistributionDto.RoyaltyDistributionDetails == null)
+        {
+            royaltyDistributionDto.RoyaltyDistributionDetails = new List<RoyaltyDistributionDetailDto>();
+        }
+
+        if(royaltyDistribution.RoyaltyDistributionDetails!= null)
+        {
+            royaltyDistribution.RoyaltyDistributionDetails.ToList().ForEach(rdd => {
+                royaltyDistributionDto.RoyaltyDistributionDetails.Add(new RoyaltyDistributionDetailDto {
+                    Id = rdd.Id,
+                    RoyaltyLevelDetailId = rdd.RoyaltyLevelDetailId,
+                    RoyaltyAmount = rdd.RoyaltyAmount,
+                    UserId = rdd.UserId,
+                    PayoutDate = rdd.PayoutDate,
+                    PayoutFlag = rdd.PayoutFlag
+                });
+            });
+        }
+        return royaltyDistributionDto;
     }
 
     private static RoyaltyLevelDto RoyaltyLevelItemToDTO(RoyaltyLevel royaltyLevel) 

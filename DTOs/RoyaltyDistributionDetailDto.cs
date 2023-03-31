@@ -8,9 +8,9 @@ public class RoyaltyDistributionDetailDto
 
     public long UserId { get; set; }
 
-    public string FirstName {get; set;}
+    public string? FirstName {get; set;}
 
-    public string LastName {get; set;}
+    public string? LastName {get; set;}
 
     public double RoyaltyAmount { get; set; }
 
