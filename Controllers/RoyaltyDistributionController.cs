@@ -131,7 +131,8 @@ public class RoyaltyDistributionController : ControllerBase
 
         return CreatedAtAction(
             nameof(GetRoyaltyDistribution),
-            new { id = royaltyDistribution.Id });
+            new { id = royaltyDistribution.Id },
+            RoyaltyDistributionItemToDto(royaltyDistribution));
     }
 
     private static RoyaltyDistributionDto RoyaltyDistributionItemToDto(RoyaltyDistribution royaltyDistribution)
