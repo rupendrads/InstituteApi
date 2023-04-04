@@ -52,24 +52,24 @@ public class RoyaltyDistributionController : ControllerBase
                             DateOfExecution = null,
                             RoyaltyDistributionDetails = new List<RoyaltyDistributionDetailDto>()
                         };
-            var admission = ad;            
+            var admission = ad;
+            double totalDistributableRoyalty = 0;
+            if(admission.Course!=null)
+            {
+                if(admission.Course.RoyaltyType == "Percentage")
+                {
+                    double courseFee = admission.Course.CourseFee;
+                    double percentage = admission.Course.RoyaltyValue;
+                    totalDistributableRoyalty = (percentage/courseFee)*100;
+                }
+                else 
+                {
+                    totalDistributableRoyalty = admission.Course.RoyaltyValue;
+                }
+            }            
             royaltyLevelDto.RoyaltyLevelDetails.ToList().ForEach(rld => {
                 if(admission!=null)
-                {
-                    double totalDistributableRoyalty = 0;
-                    if(admission.Course!=null)
-                    {
-                        if(admission.Course.RoyaltyType == "Percentage")
-                        {
-                            double courseFee = admission.Course.CourseFee;
-                            double percentage = admission.Course.RoyaltyValue;
-                            totalDistributableRoyalty = (percentage/courseFee)*100;
-                        }
-                        else 
-                        {
-                            totalDistributableRoyalty = admission.Course.RoyaltyValue;
-                        }
-                    }
+                {                    
                     var referral = _context.Admissions.Include(adm => adm.User).FirstOrDefault(adm => adm.UserId == admission.RefId && adm.InstituteId == instituteId);
                     if(referral != null){
                         royaltyDistribution.RoyaltyDistributionDetails.Add(new RoyaltyDistributionDetailDto {
@@ -108,31 +108,31 @@ public class RoyaltyDistributionController : ControllerBase
 
     // POST: api/RoyaltyDistribution
     [HttpPost]
-    public async Task<ActionResult<RoyaltyDistributionDto>> PostRoyaltyDistribution(RoyaltyDistributionDto royaltyDistributionDto)
-    {        
-        var royaltyDistribution = new RoyaltyDistribution {
-            AdmissionId = royaltyDistributionDto.AdmissionId,
-            DateOfExecution = DateTime.Now,            
-        };
+    public async Task<ActionResult<RoyaltyDistributionDto>> PostRoyaltyDistribution(ICollection<RoyaltyDistributionDto> royaltyDistributionDtos)
+    {
+        royaltyDistributionDtos.ToList().ForEach(rdd => {
+            var royaltyDistribution = new RoyaltyDistribution {
+                AdmissionId = rdd.AdmissionId,
+                DateOfExecution = DateTime.Now,            
+            };
 
-        royaltyDistribution.RoyaltyDistributionDetails = new List<RoyaltyDistributionDetail>();
-        royaltyDistributionDto.RoyaltyDistributionDetails.ToList().ForEach(rdd => {
-            royaltyDistribution.RoyaltyDistributionDetails.Add(new RoyaltyDistributionDetail {
-                PayoutDate = null,
-                PayoutFlag = false,
-                RoyaltyAmount = rdd.RoyaltyAmount,
-                RoyaltyLevelDetailId = rdd.RoyaltyLevelDetailId,
-                UserId = rdd.UserId
+            royaltyDistribution.RoyaltyDistributionDetails = new List<RoyaltyDistributionDetail>();
+            rdd.RoyaltyDistributionDetails.ToList().ForEach(rdd => {
+                royaltyDistribution.RoyaltyDistributionDetails.Add(new RoyaltyDistributionDetail {
+                    PayoutDate = null,
+                    PayoutFlag = false,
+                    RoyaltyAmount = rdd.RoyaltyAmount,
+                    RoyaltyLevelDetailId = rdd.RoyaltyLevelDetailId,
+                    UserId = rdd.UserId
+                });
             });
-        });
 
-        _context.RoyaltyDistributions.Add(royaltyDistribution);
+            _context.RoyaltyDistributions.Add(royaltyDistribution);
+        });
+        
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(
-            nameof(GetRoyaltyDistribution),
-            new { id = royaltyDistribution.Id },
-            RoyaltyDistributionItemToDto(royaltyDistribution));
+        return NoContent();
     }
 
     private static RoyaltyDistributionDto RoyaltyDistributionItemToDto(RoyaltyDistribution royaltyDistribution)
