@@ -29,6 +29,34 @@ public class RoyaltyPayoutController: ControllerBase
                     .ToListAsync();
     }
 
+    // POST: api/RoyaltyPayout?instituteId=1
+    [HttpPost]
+    public async Task<ActionResult<RoyaltyDistributionDto>> PostRoyaltyPayout(long instituteId,ICollection<RoyaltyDistributionDto> royaltyDistributionDtos)
+    {
+        await _context.RoyaltyDistributions.Include(rd => rd.RoyaltyDistributionDetails)
+            .Where(rd => rd.Admission.InstituteId == instituteId && rd.RoyaltyDistributionDetails.Any(rdd => rdd.PayoutFlag == false))
+            .LoadAsync();
+
+        royaltyDistributionDtos.ToList().ForEach(async rd => {
+            var royaltyDistribution = await _context.RoyaltyDistributions.FindAsync(rd.Id);
+            if(royaltyDistribution != null)
+            {
+                rd.RoyaltyDistributionDetails.ToList().ForEach(async rdd => {
+                    var royaltyDistributionDetail = await _context.RoyaltyDistributionDetails.FindAsync(rdd.Id);
+                    if(royaltyDistributionDetail != null)
+                    {
+                        royaltyDistributionDetail.PayoutDate = DateTime.Now;
+                        royaltyDistributionDetail.PayoutFlag = true;
+                    }
+                });
+            }
+        });
+
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
     private static RoyaltyDistributionDto RoyaltyDistributionItemToDto(RoyaltyDistribution royaltyDistribution)
     {
         RoyaltyDistributionDto royaltyDistributionDto = new RoyaltyDistributionDto {
