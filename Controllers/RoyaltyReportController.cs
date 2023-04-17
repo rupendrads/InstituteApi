@@ -18,14 +18,25 @@ public class RoyaltyReportController: ControllerBase
         _context = context;
     }
 
-    // GET: api/RoyaltyReport?instituteId=1
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<RoyaltyDistributionDto>>> GetRoyaltyPayouts(long instituteId)
+    // GET: api/RoyaltyReport/dates?instituteId=1
+    [HttpGet("dates")]
+    public async Task<ActionResult<IEnumerable<DateTime?>>> GetRoyaltyPayoutDates(long instituteId)
     {
         return await _context.RoyaltyDistributions.Include(rd => rd.Admission).Include(rd => rd.Admission.User)
                     .Include(rd => rd.RoyaltyDistributionDetails).ThenInclude(rdd => rdd.User)
                     .Where(rd => rd.Admission.InstituteId == instituteId && rd.RoyaltyDistributionDetails.Any(rdd => rdd.PayoutFlag == true))
-                    .Select(x => RoyaltyDistributionItemToDto(x))
+                    .Select(x => RoyaltyPayoutDate(x))                    
+                    .ToListAsync();
+    }
+
+    // GET: api/RoyaltyReport?instituteId=1
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<RoyaltyDistributionDto>>> GetRoyaltyPayouts(long instituteId)
+    {        
+        return await _context.RoyaltyDistributions.Include(rd => rd.Admission).Include(rd => rd.Admission.User)
+                    .Include(rd => rd.RoyaltyDistributionDetails).ThenInclude(rdd => rdd.User)
+                    .Where(rd => rd.Admission.InstituteId == instituteId && rd.RoyaltyDistributionDetails.Any(rdd => rdd.PayoutFlag == true))
+                    .Select(x => RoyaltyDistributionItemToDto(x))                    
                     .ToListAsync();
     }
 
@@ -62,5 +73,11 @@ public class RoyaltyReportController: ControllerBase
             });
         }
         return royaltyDistributionDto;
+    }
+
+    private static DateTime? RoyaltyPayoutDate(RoyaltyDistribution royaltyDistribution)
+    {   
+        RoyaltyDistributionDto royaltyDistributionDto = RoyaltyDistributionItemToDto(royaltyDistribution); 
+        return royaltyDistributionDto.RoyaltyDistributionDetails.First().PayoutDate.Value;
     }
 }
