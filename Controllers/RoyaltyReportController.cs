@@ -29,13 +29,14 @@ public class RoyaltyReportController: ControllerBase
                     .ToListAsync();
     }
 
-    // GET: api/RoyaltyReport?instituteId=1
+    // GET: api/RoyaltyReport?instituteId=1&payoutDate=Fri Apr 07 2023
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<RoyaltyDistributionDto>>> GetRoyaltyPayouts(long instituteId)
+    public async Task<ActionResult<IEnumerable<RoyaltyDistributionDto>>> GetRoyaltyPayouts(long instituteId, DateTime payoutDate)
     {        
         return await _context.RoyaltyDistributions.Include(rd => rd.Admission).Include(rd => rd.Admission.User)
                     .Include(rd => rd.RoyaltyDistributionDetails).ThenInclude(rdd => rdd.User)
-                    .Where(rd => rd.Admission.InstituteId == instituteId && rd.RoyaltyDistributionDetails.Any(rdd => rdd.PayoutFlag == true))
+                    .Where(rd => rd.Admission.InstituteId == instituteId 
+                    && rd.RoyaltyDistributionDetails.Any(rdd => rdd.PayoutFlag == true && rdd.PayoutDate.Value.Date == payoutDate))
                     .Select(x => RoyaltyDistributionItemToDto(x))                    
                     .ToListAsync();
     }
