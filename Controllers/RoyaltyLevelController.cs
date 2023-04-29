@@ -3,9 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using InstituteApi.Models;
 using InstituteApi.DTOs;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Authorization;
 
 namespace InstituteApi.Controllers;
 
+[Authorize]
 [EnableCors("_myAllowSpecificOrigins")]
 [ApiController]
 [Route("api/[controller]")]
