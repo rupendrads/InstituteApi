@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using InstituteApi.Models;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using InstituteApi.Repositories;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -23,6 +27,29 @@ builder.Services.AddCors(options =>
         .AllowCredentials();
     });
 });
+
+builder.Services.AddAuthentication(x =>
+	{
+		x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+		x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+	}).AddJwtBearer(o =>
+	{
+		var Key = Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]);
+		o.SaveToken = true;
+		o.TokenValidationParameters = new TokenValidationParameters
+		{
+			ValidateIssuer = false,
+			ValidateAudience = false,
+			ValidateLifetime = true,
+			ValidateIssuerSigningKey = true,
+			ValidIssuer = builder.Configuration["JWT:Issuer"],
+			ValidAudience = builder.Configuration["JWT:Audience"],
+			IssuerSigningKey = new SymmetricSecurityKey(Key)
+		};
+	});
+
+    builder.Services.AddSingleton<IJWTManagerRepository, JWTManagerRepository>();
+
 builder.Services.AddControllers().AddJsonOptions(x =>
                 x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 ;
@@ -31,6 +58,7 @@ builder.Services.AddDbContext<InstituteContext>(opt =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -46,6 +74,7 @@ app.UseRouting();
 
 app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod());
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
