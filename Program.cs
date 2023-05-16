@@ -21,7 +21,8 @@ builder.Services.AddCors(options =>
             "https://localhost:7230",
             "http://localhost:90",
             "http://localhost:8090",
-            "http://192.168.0.107:8090")
+            "http://192.168.0.107:8090",
+            "http://192.168.1.102:8090")
         .AllowAnyMethod()
         .AllowAnyHeader()
         .AllowCredentials();

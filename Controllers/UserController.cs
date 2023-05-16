@@ -45,6 +45,7 @@ public class UsersController : ControllerBase
 
     // POST: api/Users
     [HttpPost]
+    [AllowAnonymous]
     public async Task<ActionResult<UserDto>> PostUser(UserDto userDto)
     {
         var user = new User
