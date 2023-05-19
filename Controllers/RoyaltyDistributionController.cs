@@ -79,7 +79,7 @@ public class RoyaltyDistributionController : ControllerBase
                             PayoutFlag = false,
                             PayoutDate = null,
                             RoyaltyLevelDetailId = rld.Id,                        
-                            RoyaltyAmount = totalDistributableRoyalty> 0 ? ((double)rld.RLevelPercent/totalDistributableRoyalty)*100: 0,
+                            RoyaltyAmount = totalDistributableRoyalty> 0 ? (totalDistributableRoyalty *((double)rld.RLevelPercent)/100): 0,
                             UserId = referral.UserId,
                             FirstName = referral.User.FirstName,
                             LastName = referral.User.LastName
